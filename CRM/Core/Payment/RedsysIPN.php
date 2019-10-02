@@ -137,10 +137,12 @@ class CRM_Core_Payment_RedsysIPN extends CRM_Core_Payment_BaseIPN {
     }
   }
 
-  function validateData($paymentProcessor, &$input, &$ids, &$objects, $required = TRUE, $paymentProcessorID = NULL) {
-    $signatureNotif = $this->_redsysAPI->createMerchantSignatureNotif($paymentProcessor["password"], $input["Ds_MerchantParameters"]);
+  function validateData(&$input, &$ids, &$objects, $required = TRUE, $paymentProcessorID = NULL) {
+    $success = parent::validateData($input, $ids, $objects, $required, $paymentProcessorID);
 
-    if ($input['Ds_MerchantCode'] != $paymentProcessor["user_name"]) {
+    $signatureNotif = $this->_redsysAPI->createMerchantSignatureNotif($objects['paymentProcessor']["password"], $input["Ds_MerchantParameters"]);
+
+    if ($input['Ds_MerchantCode'] != $objects['paymentProcessor']["user_name"]) {
       CRM_Core_Error::debug_log_message("Redsys Response param Ds_MerchantCode incorrect");
       return FALSE;
     }
@@ -150,7 +152,7 @@ class CRM_Core_Payment_RedsysIPN extends CRM_Core_Payment_BaseIPN {
       return FALSE;
     }
 
-    return parent::validateData($input, $ids, $objects, $required, $paymentProcessorID);
+    return $success;
   }
 
   static function retrieve($name, $type, $location = 'POST', $abort = TRUE) {
